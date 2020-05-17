@@ -1,6 +1,7 @@
 package main
 
 import (
+	"flag"
 	"fmt"
 	"log"
 	"math/big"
@@ -13,14 +14,14 @@ import (
 )
 
 const (
-	logPath   = "my-log.log"
-	logDetail = h.ERROR + h.INFO + h.DEBUG + h.FUNC + h.MYSQL
 	// DB
-	dbHost  = "tcp(127.0.0.1:3306)"
-	dbUser  = "root"
-	dbPass  = "password"
-	dbTable = "database"
-	dbDSN   = "" // "?allowOldPasswords=true"
+	dbHost    = "tcp(127.0.0.1:3306)"
+	dbUser    = "user"
+	dbPass    = "pass"
+	dbTable   = "db_name"
+	dbDSN     = "" // "?allowOldPasswords=true"
+	dbMaxIdle = 32
+	dbMaxOpen = 32
 
 	//SNMP
 	snmpDefaultRO = "load"
@@ -71,29 +72,36 @@ const (
 		" if( contract_speed > sm_sp, contract_remain, contract_remain -300 )),t2.last_upd = Now()"
 )
 
+var (
+	logPath   = flag.String("log", fmt.Sprintf("%s.log", os.Args[0]), "Log path")
+	logDetail = flag.Int("verbose", 3, "Log verbose [ 1 - Fatal, 2 - ERROR, 4 - INFO, 8 - MYSQL, 16 - FUNC, 32 - DEBUG ]")
+)
+
 // TODO think about singleton and app-container
 var l h.MyLogger
 var mysql h.MySQL
 
 func main() {
 
+	flag.Parse()
+
 	//
 	// Init logs
 	//
 
-	f, err := os.OpenFile(logPath, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
+	f, err := os.OpenFile(*logPath, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
 	if err != nil {
 		log.Fatalf("error opening file: %v", err)
 	}
 	defer f.Close()
 
-	l = h.InitLog(f, logDetail)
+	l = h.InitLog(f, *logDetail)
 
 	//
 	// Init MySQL connection
 	//
 
-	mysql, err = h.DBConnect(&l, dbHost, dbUser, dbPass, dbTable, dbDSN)
+	mysql, err = h.DBConnect(&l, dbHost, dbUser, dbPass, dbTable, dbDSN, dbMaxIdle, dbMaxOpen)
 	if err != nil {
 		panic(err)
 	}

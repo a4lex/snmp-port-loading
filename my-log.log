@@ -1,6 +1,0 @@
-2020-04-16 22:35:17 [FUNC] Start: main - 1587065717
-2020-04-16 22:35:17 [MYSQL] Query: "SELECT INET_NTOA(s.routerip) AS routerip, IFNULL(d.snmp_ro, 'load') AS snmp_ro FROM source s LEFT JOIN device d ON s.routerip = d.ip GROUP BY s.routerip" - FAILED dial tcp 127.0.0.1:3306: connect: connection refused
-2020-04-16 22:35:17 [MYSQL] Query: "UPDATE source_gr_contract AS t2 INNER JOIN  (SELECT g.id,if(sum((input - input_p)/(300)*8)>sum((output - output_p )/(300)*8) ,sum((input - input_p)/(300)*8) ,sum((output - output_p)/(300)*8)) AS sm_sp  FROM source AS s INNER JOIN source_gr_contract AS g ON s.group_id = g.id  WHERE g.id >0 GROUP BY g.id) t1 ON t1.id = t2.id SET t2.last_speed = sm_sp,t2.contract_remain = if(month(last_upd) <> month(Now()) ,(DAY(LAST_DAY(NOW()))*3600*24*0.05 ), if( contract_speed > sm_sp, contract_remain, contract_remain -300 )),t2.last_upd = Now()" - FAILED dial tcp 127.0.0.1:3306: connect: connection refused
-2020-04-16 22:35:17 [INFO] Run: /var/www/html/snmp/bin/update_db_rrd.pl
-2020-04-16 22:35:17 [INFO] Run: /home/diriger/snmp/update_period.pl
-2020-04-16 22:35:17 [FUNC] Stop: main - 1587065717, diration: 0
